@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Hat of Many Languages</title>
+<style>
+  :root{
+    --void:#120b22;
+    --void-2:#1b1138;
+    --panel:rgba(34,22,62,.55);
+    --candle:#e9b84e;
+    --candle-soft:#f3d488;
+    --parchment:#ece1c6;
+    --parchment-2:#e3d4b0;
+    --ink:#2a2118;
+    --ink-soft:#5b4d36;
+    --ember:#cf6a4a;
+    --arcane:#7fd6c4;
+    --mist:#bcaee0;
+    --mist-dim:#8678a8;
+    --display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --code:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--body);
+    color:var(--mist);
+    background:
+      radial-gradient(1200px 700px at 50% -10%, #2a1a4d 0%, transparent 60%),
+      radial-gradient(900px 600px at 80% 110%, #1e2a4d 0%, transparent 55%),
+      linear-gradient(160deg,var(--void) 0%, var(--void-2) 100%);
+    min-height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px 18px;
+    overflow-x:hidden;
+  }
+  /* drifting embers */
+  .embers{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+  .ember{
+    position:absolute;bottom:-12px;width:4px;height:4px;border-radius:50%;
+    background:var(--candle);box-shadow:0 0 8px 2px rgba(233,184,78,.7);
+    opacity:0;animation:rise linear infinite;
+  }
+  @keyframes rise{
+    0%{transform:translateY(0) translateX(0);opacity:0}
+    12%{opacity:.9}
+    100%{transform:translateY(-105vh) translateX(var(--drift));opacity:0}
+  }
+
+  .stage{position:relative;z-index:1;width:100%;max-width:720px}
+
+  .card{
+    background:var(--panel);
+    border:1px solid rgba(233,184,78,.22);
+    border-radius:20px;
+    padding:38px 34px 34px;
+    backdrop-filter:blur(8px);
+    box-shadow:0 30px 80px -30px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+
+  .eyebrow{
+    font-family:var(--code);
+    text-transform:uppercase;
+    letter-spacing:.34em;
+    font-size:11px;
+    color:var(--candle);
+    text-align:center;
+  }
+
+  h1{
+    font-family:var(--display);
+    font-weight:600;
+    color:var(--parchment);
+    text-align:center;
+    line-height:1.05;
+    letter-spacing:.5px;
+    margin:14px 0 6px;
+    font-size:clamp(30px,6vw,46px);
+    text-shadow:0 2px 24px rgba(233,184,78,.18);
+  }
+  .sub{
+    text-align:center;color:var(--mist-dim);
+    max-width:46ch;margin:0 auto;font-size:15px;line-height:1.6;
+  }
+
+  /* ---- The Hat ---- */
+  .hat-wrap{display:flex;justify-content:center;margin:8px 0 18px}
+  .hat{width:170px;height:170px;filter:drop-shadow(0 18px 26px rgba(0,0,0,.55))}
+  .hat .brow{transform-origin:center;animation:think 3.6s ease-in-out infinite}
+  @keyframes think{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+  .hat-drop{animation:drop 1s cubic-bezier(.2,.9,.2,1.05) both}
+  @keyframes drop{from{transform:translateY(-120px) rotate(-6deg);opacity:0}to{transform:none;opacity:1}}
+
+  .btn{
+    font-family:var(--body);
+    cursor:pointer;border:none;border-radius:999px;
+    font-size:16px;font-weight:600;letter-spacing:.2px;
+    padding:15px 30px;color:#1a1208;
+    background:linear-gradient(180deg,var(--candle-soft),var(--candle));
+    box-shadow:0 10px 26px -8px rgba(233,184,78,.6), inset 0 1px 0 rgba(255,255,255,.5);
+    transition:transform .12s ease, box-shadow .2s ease, filter .2s ease;
+  }
+  .btn:hover{transform:translateY(-2px);filter:brightness(1.05)}
+  .btn:active{transform:translateY(0)}
+  .btn.ghost{
+    background:transparent;color:var(--candle);
+    border:1px solid rgba(233,184,78,.4);box-shadow:none;
+  }
+  .btn.ghost:hover{background:rgba(233,184,78,.08)}
+  .center{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:24px}
+
+  /* ---- Quiz ---- */
+  .progress{display:flex;gap:7px;justify-content:center;margin-bottom:26px}
+  .pip{width:10px;height:10px;border-radius:50%;background:rgba(233,184,78,.18);transition:.3s}
+  .pip.done{background:var(--ember)}
+  .pip.now{background:var(--candle);box-shadow:0 0 10px 2px rgba(233,184,78,.6)}
+
+  .q-count{font-family:var(--code);font-size:12px;letter-spacing:.2em;color:var(--mist-dim);text-align:center;text-transform:uppercase}
+  .q-text{
+    font-family:var(--display);color:var(--parchment);
+    font-size:clamp(22px,4vw,28px);text-align:center;line-height:1.25;
+    margin:10px auto 26px;max-width:24ch;
+  }
+  .options{display:grid;gap:12px}
+  .opt{
+    text-align:left;cursor:pointer;
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(188,174,224,.18);
+    border-radius:14px;padding:16px 18px;
+    color:var(--mist);font-size:15.5px;line-height:1.4;font-family:var(--body);
+    display:flex;align-items:center;gap:14px;
+    transition:transform .12s ease, border-color .2s, background .2s, color .2s;
+  }
+  .opt:hover{
+    border-color:rgba(233,184,78,.55);
+    background:rgba(233,184,78,.07);
+    color:var(--parchment);
+    transform:translateX(4px);
+  }
+  .opt .rune{
+    flex:0 0 auto;width:30px;height:30px;border-radius:8px;
+    display:grid;place-items:center;font-family:var(--code);font-size:14px;
+    color:var(--candle);background:rgba(233,184,78,.1);border:1px solid rgba(233,184,78,.25);
+  }
+
+  /* ---- Thinking ---- */
+  .mumble{
+    font-family:var(--display);font-style:italic;color:var(--mist);
+    text-align:center;font-size:clamp(20px,4vw,26px);line-height:1.4;
+    min-height:2.6em;max-width:26ch;margin:6px auto 0;
+  }
+  .mumble .cursor{color:var(--candle);animation:blink 1s step-end infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* ---- Result ---- */
+  .scroll{
+    background:linear-gradient(180deg,var(--parchment),var(--parchment-2));
+    color:var(--ink);border-radius:14px;padding:32px 30px;
+    box-shadow:0 24px 60px -24px rgba(0,0,0,.7), inset 0 0 0 1px rgba(120,90,40,.25);
+    position:relative;animation:unfurl .7s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes unfurl{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
+  .verdict-label{font-family:var(--code);text-transform:uppercase;letter-spacing:.3em;font-size:11px;color:var(--ink-soft);text-align:center}
+  .lang-name{
+    font-family:var(--display);font-weight:700;text-align:center;line-height:1;
+    font-size:clamp(40px,9vw,64px);margin:8px 0 2px;
+  }
+  .lang-title{font-family:var(--display);font-style:italic;text-align:center;color:var(--ink-soft);font-size:18px;margin-bottom:18px}
+  .rule{height:1px;background:rgba(120,90,40,.3);margin:18px 0}
+  .blurb{color:#3a2f1f;font-size:15.5px;line-height:1.65;text-align:center;max-width:50ch;margin:0 auto}
+  .why{
+    margin-top:16px;font-size:13.5px;color:var(--ink-soft);text-align:center;
+    font-style:italic;line-height:1.5;
+  }
+  .spell-label{font-family:var(--code);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;text-align:center}
+  .spell{
+    font-family:var(--code);font-size:14px;line-height:1.6;
+    background:#241a30;color:var(--arcane);
+    border-radius:10px;padding:16px 18px;overflow-x:auto;
+    border:1px solid rgba(127,214,196,.2);white-space:pre;text-align:left;
+  }
+  .considered{margin-top:22px;text-align:center}
+  .considered .ct{font-family:var(--code);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+  .chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .chip{font-size:12.5px;padding:5px 12px;border-radius:999px;background:rgba(120,90,40,.12);color:var(--ink);border:1px solid rgba(120,90,40,.25)}
+
+  .hidden{display:none}
+  .fade{animation:fade .35s ease both}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="embers" id="embers" aria-hidden="true"></div>
+
+<main class="stage">
+  <div class="card" id="card"><!-- screens injected here --></div>
+</main>
+
+<script>
+/* ---------------------------------------------------------
+   THE HAT OF MANY LANGUAGES
+   An enchanted sorting hat for your first programming language.
+--------------------------------------------------------- */
+
+const LANGS = {
+  python: {
+    name:"Python", title:"the Serpent Sage",
+    blurb:"Calm, clear, and quietly powerful. Python speaks almost like plain English, so your ideas reach the screen before your patience runs out. From data and AI to little automations, it does nearly everything — and welcomes beginners more warmly than any other tongue.",
+    why:"You favor readability, fast results, and a mentor who meets you where you are.",
+    spell:'# your first incantation\nfor wizard in ["you"]:\n    print(f"Hello, {wizard}!")'
+  },
+  javascript: {
+    name:"JavaScript", title:"the Web Weaver",
+    blurb:"Wild, everywhere, and impossible to ignore. JavaScript breathes life into every button, page, and pixel in the browser. It bends and improvises, occasionally chaotic — but nothing else lets you build something the whole world can open in one click.",
+    why:"You want to make things people can see and click immediately, no setup rituals required.",
+    spell:'// your first incantation\ndocument.body.onclick = () =>\n  alert("✨ The page obeys you ✨");'
+  },
+  rust: {
+    name:"Rust", title:"the Iron Guardian",
+    blurb:"Strict, vigilant, and fiercely protective. Rust's compiler is a stern mentor that refuses to let a single bug slip past — and in return forges programs that are fast and almost unbreakable. Demanding at first, formidable forever.",
+    why:"You take comfort in guardrails and want to be made truly formidable, not coddled.",
+    spell:'// your first incantation\nfn main() {\n    println!("Memory-safe magic. ⚔️");\n}'
+  },
+  cpp: {
+    name:"C++", title:"the Arcane Archmage",
+    blurb:"Ancient, intricate, and overwhelmingly powerful. C++ hands you the raw machine and asks what you'd like to command. Games, engines, and the foundations of other languages are built here. The deepest spells — and the sharpest edges.",
+    why:"You crave total control and the kind of speed that powers games and engines.",
+    spell:'// your first incantation\n#include <iostream>\nint main(){\n  std::cout << "I bend the metal. 🔥";\n}'
+  },
+  java: {
+    name:"Java", title:"the Stone Architect",
+    blurb:"Orderly, dependable, and built to last centuries. Java values structure and ceremony, raising vast, reliable systems that run unchanged for decades across every platform. Verbose, yes — but the cathedrals it builds do not fall.",
+    why:"You like clear structure, big reliable systems, and learning the proper rituals.",
+    spell:'// your first incantation\nclass Spell {\n  public static void main(String[] a){\n    System.out.println("Built to last.");\n  }\n}'
+  },
+  go: {
+    name:"Go", title:"the Swift Courier",
+    blurb:"Plain-spoken, pragmatic, and refreshingly quick. Go strips away ceremony and gives you one clear way to do things, then runs like the wind. It was made to build fast, sturdy services without the fuss — simplicity as a superpower.",
+    why:"You prize simplicity, clear errors, and getting reliable things done without fuss.",
+    spell:'// your first incantation\npackage main\nimport "fmt"\nfunc main(){ fmt.Println("Simple. Fast. ⚡") }'
+  },
+  swift: {
+    name:"Swift", title:"the Crystal Artisan",
+    blurb:"Elegant, modern, and beautifully exact. Swift is safe like Rust yet graceful like a poem, and it's the chosen tongue for crafting polished apps on iPhone, iPad, and Mac. Form and function, kept in perfect balance.",
+    why:"You want something modern and elegant — ideally to craft a beautiful phone app.",
+    spell:'// your first incantation\nlet wizard = "you"\nprint("Hello, \\(wizard)! 💎")'
+  },
+  ruby: {
+    name:"Ruby", title:"the Joyful Bard",
+    blurb:"Expressive, friendly, and made for human happiness. Ruby reads like a sentence and was designed so that writing it feels like a delight. Beloved for building web apps quickly and with joy, it puts your comfort first.",
+    why:"You want code that's joyful and expressive, and results that come quickly.",
+    spell:'# your first incantation\n3.times { puts "Coding should be joyful! 🎭" }'
+  }
+};
+
+const QUESTIONS = [
+  { q:"What do you most long to conjure first?", opts:[
+    { t:"A page that reacts the instant someone clicks", s:{javascript:2, ruby:1} },
+    { t:"A program that crunches numbers or learns patterns", s:{python:3} },
+    { t:"A blazing-fast game or engine", s:{cpp:2, rust:1} },
+    { t:"A polished app for a phone", s:{swift:2, java:1} },
+  ]},
+  { q:"When the rules get strict, you feel…", opts:[
+    { t:"Comforted — guardrails keep me from harm", s:{rust:2, java:1} },
+    { t:"Restless — just let me move quickly", s:{python:1, javascript:1, ruby:1} },
+    { t:"Challenged — give me total control", s:{cpp:2} },
+    { t:"Balanced — clear, but never fussy", s:{go:2, swift:1} },
+  ]},
+  { q:"Your ideal magical mentor is…", opts:[
+    { t:"Patient and welcoming to beginners", s:{python:2, ruby:2} },
+    { t:"Demanding, but makes you formidable", s:{cpp:2, rust:2} },
+    { t:"Organized and methodical", s:{java:2, go:1} },
+    { t:"Stylish and thoroughly modern", s:{swift:2, javascript:1} },
+  ]},
+  { q:"A bug appears. How do you face it?", opts:[
+    { t:"I want the compiler to catch it before it ever runs", s:{rust:2, swift:1, java:1} },
+    { t:"I'll just run it and see what breaks", s:{python:1, javascript:2, ruby:1} },
+    { t:"I'll hunt every byte by hand for max speed", s:{cpp:2} },
+    { t:"Give me a plain, simple error and I move on", s:{go:2} },
+  ]},
+  { q:"Your dream project, five years from now:", opts:[
+    { t:"AI, data science, or research", s:{python:3} },
+    { t:"A web app or a startup", s:{javascript:2, ruby:2} },
+    { t:"Operating systems, browsers, raw performance", s:{rust:2, cpp:2} },
+    { t:"Vast, reliable backend systems", s:{java:2, go:2} },
+  ]},
+  { q:"Choose an aesthetic to live in:", opts:[
+    { t:"Minimal — few ways to do each thing", s:{go:2, python:1} },
+    { t:"Expressive and beautiful", s:{ruby:2, swift:2} },
+    { t:"Raw power, no limits", s:{cpp:2} },
+    { t:"Flexible and a little chaotic", s:{javascript:2} },
+  ]},
+  { q:"How much patience do you have for setup and ceremony?", opts:[
+    { t:"Plenty — I'll learn the proper rituals", s:{java:2, cpp:1, rust:1} },
+    { t:"None — one line, then magic", s:{python:2, ruby:1} },
+    { t:"Some — pragmatic trade-offs", s:{go:2, swift:1} },
+    { t:"I live in the browser; there's no setup at all", s:{javascript:2} },
+  ]},
+];
+
+const MUMBLES = [
+  "Hmm… curious, very curious…",
+  "Plenty of logic in here, I see…",
+  "Ah — but where does the heart point?",
+  "Patient? No… eager. Definitely eager…",
+  "Yes… YES, I know exactly where to put you…",
+];
+
+const RUNES = ["A","B","C","D"];
+
+/* ---------------- state ---------------- */
+let scores = {};
+let current = 0;
+
+const card = document.getElementById("card");
+
+function resetScores(){
+  scores = {};
+  for (const k in LANGS) scores[k] = 0;
+}
+
+/* ---------------- embers ---------------- */
+(function makeEmbers(){
+  const box = document.getElementById("embers");
+  const n = 26;
+  for (let i=0;i<n;i++){
+    const e = document.createElement("div");
+    e.className = "ember";
+    const left = Math.random()*100;
+    const dur = 9 + Math.random()*10;
+    const delay = Math.random()*12;
+    const drift = (Math.random()*80-40)+"px";
+    const size = 2 + Math.random()*3;
+    e.style.left = left+"%";
+    e.style.width = e.style.height = size+"px";
+    e.style.animationDuration = dur+"s";
+    e.style.animationDelay = "-"+delay+"s";
+    e.style.setProperty("--drift", drift);
+    e.style.opacity = ".0";
+    box.appendChild(e);
+  }
+})();
+
+/* ---------------- hat SVG ---------------- */
+function hatSVG(extraClass){
+  return `
+  <svg class="hat ${extraClass||''}" viewBox="0 0 200 200" role="img" aria-label="A talking sorting hat">
+    <defs>
+      <linearGradient id="felt" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#5b4632"/>
+        <stop offset="1" stop-color="#2f2418"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="100" cy="168" rx="74" ry="16" fill="url(#felt)"/>
+    <ellipse cx="100" cy="164" rx="74" ry="14" fill="#3c2e1d"/>
+    <path d="M62 158 C66 96 78 60 96 30 C104 16 112 40 116 64
+             C122 100 128 132 138 156 C120 166 80 166 62 158 Z"
+          fill="url(#felt)" stroke="#1e1710" stroke-width="2"/>
+    <path d="M78 96 C92 112 120 110 132 100 C128 122 112 132 96 128
+             C86 124 80 110 78 96 Z" fill="#241b11" opacity=".55"/>
+    <g class="brow" fill="#1c150d">
+      <path d="M82 92 q9 -10 20 -3 q-10 -2 -20 3 Z"/>
+      <path d="M112 96 q10 -8 18 0 q-10 -3 -18 0 Z"/>
+    </g>
+    <path d="M88 118 q14 12 30 2 q-12 14 -30 -2 Z" fill="#160f08"/>
+    <path d="M96 30 q6 -10 12 0" fill="none" stroke="#1e1710" stroke-width="3" stroke-linecap="round"/>
+  </svg>`;
+}
+
+/* ---------------- screens ---------------- */
+function renderIntro(){
+  card.innerHTML = `
+    <div class="fade">
+      <p class="eyebrow">A Sorting Ceremony</p>
+      <div class="hat-wrap">${hatSVG("hat-drop")}</div>
+      <h1>The Hat of Many Languages</h1>
+      <p class="sub">Centuries of code have passed beneath my brim. Answer my questions truthfully, and I shall name the programming language you ought to learn first.</p>
+      <div class="center">
+        <button class="btn" id="begin">Place the hat upon your head</button>
+      </div>
+    </div>`;
+  document.getElementById("begin").onclick = () => { resetScores(); current = 0; renderQuestion(); };
+}
+
+function renderQuestion(){
+  const item = QUESTIONS[current];
+  const pips = QUESTIONS.map((_,i)=>{
+    const cls = i<current?"done":(i===current?"now":"");
+    return `<span class="pip ${cls}"></span>`;
+  }).join("");
+
+  card.innerHTML = `
+    <div class="fade">
+      <div class="progress">${pips}</div>
+      <p class="q-count">Question ${current+1} of ${QUESTIONS.length}</p>
+      <h2 class="q-text">${item.q}</h2>
+      <div class="options">
+        ${item.opts.map((o,i)=>`
+          <button class="opt" data-i="${i}">
+            <span class="rune">${RUNES[i]}</span>
+            <span>${o.t}</span>
+          </button>`).join("")}
+      </div>
+    </div>`;
+
+  card.querySelectorAll(".opt").forEach(btn=>{
+    btn.onclick = () => {
+      const o = item.opts[+btn.dataset.i];
+      for (const k in o.s) scores[k] += o.s[k];
+      current++;
+      if (current < QUESTIONS.length) renderQuestion();
+      else renderThinking();
+    };
+  });
+}
+
+function renderThinking(){
+  card.innerHTML = `
+    <div class="fade">
+      <p class="eyebrow">The hat deliberates…</p>
+      <div class="hat-wrap">${hatSVG()}</div>
+      <p class="mumble" id="mumble"></p>
+    </div>`;
+
+  const el = document.getElementById("mumble");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (reduce){
+    el.textContent = MUMBLES[MUMBLES.length-1];
+    setTimeout(renderResult, 900);
+    return;
+  }
+
+  let line = 0;
+  function typeLine(){
+    const text = MUMBLES[line];
+    let i = 0;
+    el.innerHTML = "";
+    const tick = setInterval(()=>{
+      el.innerHTML = text.slice(0,i) + '<span class="cursor">▌</span>';
+      i++;
+      if (i > text.length){
+        clearInterval(tick);
+        el.innerHTML = text;
+        setTimeout(()=>{
+          line++;
+          if (line < MUMBLES.length) typeLine();
+          else setTimeout(renderResult, 650);
+        }, 750);
+      }
+    }, 38);
+  }
+  typeLine();
+}
+
+function renderResult(){
+  const ranked = Object.keys(scores).sort((a,b)=>scores[b]-scores[a]);
+  const top = ranked[0];
+  const L = LANGS[top];
+  const others = ranked.slice(1,4).map(k=>LANGS[k].name);
+
+  card.innerHTML = `
+    <div class="fade">
+      <div class="hat-wrap">${hatSVG()}</div>
+      <div class="scroll">
+        <p class="verdict-label">The hat has decided. Better be…</p>
+        <div class="lang-name">${L.name}!</div>
+        <p class="lang-title">${L.title}</p>
+        <div class="rule"></div>
+        <p class="blurb">${L.blurb}</p>
+        <p class="why">Why you: ${L.why}</p>
+        <div style="margin-top:22px">
+          <p class="spell-label">Your first incantation</p>
+          <pre class="spell">${escapeHtml(L.spell)}</pre>
+        </div>
+        <div class="considered">
+          <p class="ct">The hat also weighed</p>
+          <div class="chips">${others.map(n=>`<span class="chip">${n}</span>`).join("")}</div>
+        </div>
+      </div>
+      <div class="center">
+        <button class="btn" id="again">Sort me again</button>
+        <button class="btn ghost" id="restart">Back to the start</button>
+      </div>
+    </div>`;
+
+  document.getElementById("again").onclick = () => { resetScores(); current=0; renderQuestion(); };
+  document.getElementById("restart").onclick = renderIntro;
+}
+
+function escapeHtml(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+/* ---------------- boot ---------------- */
+resetScores();
+renderIntro();
+</script>
+</body>
+</html>
